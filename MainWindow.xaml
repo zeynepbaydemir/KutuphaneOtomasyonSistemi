@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:KutuphaneOtomasyon"
         mc:Ignorable="d"
-        Title="MainWindow" Height="550" Width="900" Background="#F7FF00"
+        Title="MainWindow" Height="550" Width="900" Background="#FCFF9E"
         Loaded="Window_Loaded">
     
     
@@ -27,15 +27,23 @@
         <Label Content="Yazar" Margin="26,140,863,403"/>
         <Label Content="Konu" Margin="25,190,862,407" RenderTransformOrigin="0.294,2.782"/>
         <TextBox x:Name="TxtAd" HorizontalAlignment="Left" Margin="107,102,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120" Height="18" />
-        <Button x:Name="BtnListe" Content="Listele" Margin="299,123,502,441" Click="BtnListe_Click_1" Background="#FF007F"/>
-        <Button x:Name="BtnEkle" Content="Ekle" Margin="299,359,502,205" Click="BtnEkle_Click" Background="#FF007F"/>
-        <Button x:Name="BtnSil" Content="Sil" Margin="299,282,502,282" Click="BtnSil_Click" Background="#FF007F"/>
-        <Button x:Name="BtnGuncelle" Content="Güncelle" Margin="299,201,502,363" Click="BtnGuncelle_Click" Background="#FF007F"/>
+        <Button x:Name="BtnListe" FontSize="15" Content="Listele" Margin="299,123,502,441" Click="BtnListe_Click_1" Background="orange"/>
+        <Button x:Name="BtnEkle" FontSize="15" Content="Ekle" Margin="299,359,502,205" Click="BtnEkle_Click" Background="orange"/>
+        <Button x:Name="BtnSil" FontSize="15" Content="Sil" Margin="299,282,502,282" Click="BtnSil_Click" Background="Orange"/>
+        <Button x:Name="BtnGuncelle" FontSize="15" Content="Güncelle" Margin="299,201,502,363" Click="BtnGuncelle_Click" Background="Orange"/>
         <DataGrid Name="dataGrid" Width="350" Height="400"  Margin="496,100,85,134"/>
         <TextBox x:Name="TxtYazar" HorizontalAlignment="Left" Margin="107,149,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120" Height="18" />
         <Label Content="Basim Tarihi" Margin="19,253,829,341"/>
-        <ComboBox x:Name="TxtKonu" Margin="107,195,704,0" RenderTransformOrigin="0.526,-0.748" Height="25" VerticalAlignment="Top" SelectionChanged="TxtKonu_SelectionChanged"/>
-        <Button x:Name="BtnAra" Content="Ara" Margin="299,439,502,125" Click="BtnAra_Click" Background="#FF007F"/>
+        <ComboBox x:Name="TxtKonu"  Margin="107,195,704,0" RenderTransformOrigin="0.526,-0.748" Height="25" VerticalAlignment="Top" SelectionChanged="TxtKonu_SelectionChanged">
+            <ComboBoxItem Content=" " IsSelected="True"/>
+            <ComboBoxItem Content="Edebiyat"/>
+            <ComboBoxItem Content="Tarih"/>
+            <ComboBoxItem Content="Felsefe"/>
+            <ComboBoxItem Content="Bilim"/>
+            <ComboBoxItem Content="Araştırma"/>
+
+        </ComboBox>
+        <Button x:Name="BtnAra" FontSize="15" Content="Ara" Margin="299,439,502,125" Click="BtnAra_Click" Background="Orange"/>
         <Label Content="Kitap ID" Margin="26,55,822,485"/>
         <TextBox x:Name="TxtID" HorizontalAlignment="Left" Margin="107,62,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120" Height="18" />
         <DatePicker x:Name="DateSelect" Margin="107,253,704,358" RenderTransformOrigin="0.5,0.496"/>
