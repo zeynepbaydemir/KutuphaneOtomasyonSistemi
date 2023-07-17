@@ -35,12 +35,12 @@
         <TextBox x:Name="TxtYazar" HorizontalAlignment="Left" Margin="107,149,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120" Height="18" />
         <Label Content="Basim Tarihi" Margin="19,253,829,341"/>
         <ComboBox x:Name="TxtKonu"  Margin="107,195,704,0" RenderTransformOrigin="0.526,-0.748" Height="25" VerticalAlignment="Top" SelectionChanged="TxtKonu_SelectionChanged">
-            <ComboBoxItem Content=" " IsSelected="True"/>
-            <ComboBoxItem Content="Edebiyat"/>
+            <!--<ComboBoxItem Content=" " IsSelected="True"/>-->
+            <!--<ComboBoxItem Content="Edebiyat"/>
             <ComboBoxItem Content="Tarih"/>
             <ComboBoxItem Content="Felsefe"/>
             <ComboBoxItem Content="Bilim"/>
-            <ComboBoxItem Content="Araştırma"/>
+            <ComboBoxItem Content="Araştırma"/>-->
 
         </ComboBox>
         <Button x:Name="BtnAra" FontSize="15" Content="Ara" Margin="299,439,502,125" Click="BtnAra_Click" Background="Orange"/>
