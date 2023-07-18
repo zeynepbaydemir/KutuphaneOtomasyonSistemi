@@ -21,6 +21,7 @@ using System.Configuration;
 using Microsoft.Data.SqlClient;
 using Microsoft.Identity.Client;
 using System.Collections;
+using KutuphaneOtomasyon.DataSet1TableAdapters;
 
 namespace KutuphaneOtomasyon
 {
@@ -34,7 +35,6 @@ namespace KutuphaneOtomasyon
         public MainWindow()
         {
             InitializeComponent();
-           
         }
 
         private void BtnAra_Click(object sender, RoutedEventArgs e)
@@ -67,13 +67,13 @@ namespace KutuphaneOtomasyon
             //if (DateSelect.SelectedDate != null) //calismiyor date kisminda hep bi hata veriyo
             //{
             //    query += " AND basimtarih= " + DateSelect.SelectedDate.Value.ToString("dd/MM/yyyy");
-               
+
             //}
 
-            //if (TxtKonu.SelectedItem != null) //calisiyo
-            //{
-            //    query += " AND konu = '" + ((ComboBoxItem)TxtKonu.SelectedItem).Content.ToString() + "'";
-            //}
+            if (TxtKonu.SelectedItem != null) //calisiyo
+            {
+                query += " AND konu = '" + ((ComboBoxItem)TxtKonu.SelectedItem).Content.ToString() + "'";
+            }
 
             //ClearInputs();
 
@@ -83,7 +83,7 @@ namespace KutuphaneOtomasyon
             OleDbCommand cmd = new OleDbCommand(query, conn);//query yerine a yazarak aralıklı tarih araması yapabilirsin
             OleDbDataAdapter da = new OleDbDataAdapter(cmd);
             System.Data.DataTable dt = new System.Data.DataTable();
-            da.Fill(dt);
+            //da.Fill(dt);
             dataGrid.ItemsSource = CollectionViewSource.GetDefaultView(dt);
 
             conn.Close();
@@ -168,28 +168,29 @@ namespace KutuphaneOtomasyon
             //ad ve yazar bossa mesaj dondurur
             if (TxtAd.Text == "" && TxtYazar.Text == "")
             {
-                MessageBox.Show("Doldurulması gereken alanları doldurma");
+                MessageBox.Show("Doldurulması gereken alanları doldurmadınız!!!");
                 return;
             }
 
             //Id kısmı bos ve diger seyler doluysa mesaj bastırır ekrana
-            if (TxtAd.Text != "" && TxtYazar.Text != "" && (DateSelect.SelectedDate) != null)
-            {
-                MessageBox.Show("Lütfen ID kısmını doldurunuz");
-                return;
-            }
+            //if (TxtAd.Text != "" && TxtYazar.Text != "" && (DateSelect.SelectedDate) != null)
+            //{
+            //    MessageBox.Show("Lütfen ID kısmını doldurunuz");
+            //    return;
+            //}
+           
 
-            OleDbCommand show = new OleDbCommand("update kitaplar set kitapad =@p1,yazar=@p2,basimtarih=@p3,konu=@p4 where kitapid = @p5", conn);
+            //bu kisimin sorgusunda degisiklik yapildi.
+            OleDbCommand show = new OleDbCommand("update kitaplar set kitapad =@p1,yazar=@p2,basimtarih=@p3, konular.kitapkonu= @p4 where konular.id= kitaplar.konu where kitapid = @p5 ", conn);
 
             show.Parameters.AddWithValue("@p1", (TxtAd.Text));
             show.Parameters.AddWithValue("@p2", (TxtYazar.Text));
             show.Parameters.AddWithValue("@p3", (DateSelect.SelectedDate));
-            show.Parameters.AddWithValue("@p4", (int)TxtKonu.SelectedItem);
+            show.Parameters.AddWithValue("@p4", (TxtKonu.Text));
             show.Parameters.AddWithValue("@p5", int.Parse(TxtID.Text));
 
             show.ExecuteNonQuery();
             MessageBox.Show("Guncelleme islemi basarili bir sekilde gerceklesti.");
-
 
 
             conn.Close();
@@ -208,7 +209,7 @@ namespace KutuphaneOtomasyon
             show.Parameters.AddWithValue("@p2", (TxtAd.Text));
             show.Parameters.AddWithValue("@p3", (TxtYazar.Text));
             show.Parameters.AddWithValue("@p4", (DateSelect.SelectedDate));
-            show.Parameters.AddWithValue("@p5", (Konular)Enum.Parse(typeof(Konular), TxtKonu.SelectedItem.ToString()));
+            show.Parameters.AddWithValue("@p5", ((ComboBoxItem)TxtKonu.SelectedItem));
 
             show.ExecuteNonQuery();
             conn.Close();
@@ -243,20 +244,37 @@ namespace KutuphaneOtomasyon
             @"Data Source = C:\Users\Administrator\Documents\Kutuphane.accdb;" + "User Id=Admin;Password=;");
             conn.Open();
 
-            //if (Konular k = (Konular)2)
-            //{
-                
-            //}
 
-            OleDbCommand show = new OleDbCommand("Select * From Kitaplar", conn);
+            OleDbCommand show = new OleDbCommand("Select Kitaplar.kitapid, Kitaplar.kitapad, Kitaplar.yazar, Kitaplar.basimtarih, konular.kitapkonu from kitaplar, konular where kitaplar.konu=konular.konuid ", conn);
 
             dataGrid.ItemsSource = show.ExecuteReader();
 
-            //sayi = 5;
-            //for (int i = 0; i < sayi.Length; i++)
-            //{
+           // dataGrid.GetCell(1,1) = 
+           // dataGrid
 
-            //}
+            //DataGridViewColumn c = new DataGridViewColumn();
+            //DataGridViewCell cell = new DataGridViewTextBoxCell();
+
+            //c.CellTemplate = cell;
+            //c.HeaderText = "eklenen";
+            //c.Name = "eklenen";
+            //c.Visible = true;
+
+            //dgv.Columns.Insert(0, c);
+
+            //dataGrid.Columns[4].Visibility = Visibility.Hidden;
+
+          /*  DataGridTextColumn column = new DataGridTextColumn();
+            column.Header = "KonuX";
+           // column.Binding = new Binding("Konu");
+            dataGrid.Columns.Insert(4, column);
+            dataGrid[1, 0].Value =  = int.Parse(TxtID.Text);*/
+           /* foreach (DataGridRow row in dataGrid.Row)
+            {
+                if (row.Cells[7].Value.ToString() == "1")
+                    row.Cells[0].Value = "number one";
+            }*/
+            // dataGrid.Columns.RemoveAt(1);
 
         }
 
@@ -266,30 +284,30 @@ namespace KutuphaneOtomasyon
         }
 
 
-        public enum Konular
-        {
-            Seciniz,
-            Araştırma,
-            Bilim,
-            Edebiyat,
-            Felsefe,
-            Tarih
-        }
+        //public enum Konular
+        //{
+        //    Seciniz,
+        //    Araştırma,
+        //    Bilim,
+        //    Edebiyat,
+        //    Felsefe,
+        //    Tarih
+        //}
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
 
-            Console.WriteLine(Konular.Felsefe);
-            int konu = (int)Konular.Felsefe;
-            Console.WriteLine(konu);
+            //Console.WriteLine(Konular.Felsefe);
+            //int konu = (int)Konular.Felsefe;
+            //Console.WriteLine(konu);
 
-            var wd = (Konular)1;
-            Console.WriteLine(wd);
+            //var wd = (Konular)1;
+            //Console.WriteLine(wd);
 
 
             //Hoca ile yazdık
-            Konular k = (Konular)2;
+            /*Konular k = (Konular)2;
             MessageBox.Show(k.ToString());
-            Konular.Bilim.ToString();
+            Konular.Bilim.ToString();*/
 
             //************************************************
 
@@ -302,8 +320,8 @@ namespace KutuphaneOtomasyon
 
             //List<string> konuListesi = Enum.GetNames(typeof(Konular)).ToList();
 
-            TxtKonu.ItemsSource = Enum.GetValues(typeof(Konular));
-            TxtKonu.SelectedIndex = 0;
+            //TxtKonu.ItemsSource = Enum.GetValues(typeof(Konular));
+            //TxtKonu.SelectedIndex = 0;
 
             //List<string> konuListesi = Enum.GetNames(typeof(Konular)).ToList();
 
@@ -331,56 +349,6 @@ namespace KutuphaneOtomasyon
             ///
 
 
-
-
-
-        
-
-        }
-        public class Kitap
-        {
-            public int konu { get; set; }
-        }
-
-        public class sanalDatabase 
-        {
-            ArrayList sanalDB = new ArrayList();
-            public kitapReturnValue KonularSecim(Konular K) 
-            {
-                sanalDB.Add(K);
-                return kitapReturnValue.Felsefe;
-            }
-        }
-
-        class Program 
-        {
-            static void Main(string[] args) 
-            {
-                Kitap K1 = new Kitap();
-                K1.konu = 1;
-
-                sanalDatabase SB = new sanalDatabase();
-                kitapReturnValue kitapSecimSonuc = SB.KonularSecim(K1);
-
-                //if (kitapSecimSonuc == kitapReturnValue.Felsefe)
-                //{
-
-                //}
-
-                int enumInt = (int)kitapReturnValue.Tarih;
-                Console.WriteLine(enumInt);
-
-            }
-        }
-
-        public enum kitapReturnValue 
-        {
-           
-            Araştırma = 1,
-            Bilim = 2,
-            Edebiyat = 3,
-            Felsefe = 4,
-            Tarih = 5
         }
     }
 }

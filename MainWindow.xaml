@@ -31,16 +31,17 @@
         <Button x:Name="BtnEkle" FontSize="15" Content="Ekle" Margin="299,359,502,205" Click="BtnEkle_Click" Background="orange"/>
         <Button x:Name="BtnSil" FontSize="15" Content="Sil" Margin="299,282,502,282" Click="BtnSil_Click" Background="Orange"/>
         <Button x:Name="BtnGuncelle" FontSize="15" Content="Güncelle" Margin="299,201,502,363" Click="BtnGuncelle_Click" Background="Orange"/>
-        <DataGrid Name="dataGrid" Width="350" Height="400"  Margin="496,100,85,134"/>
+        <DataGrid Name="dataGrid" Width="350" Height="400"  Margin="496,100,85,134">
+        </DataGrid>
         <TextBox x:Name="TxtYazar" HorizontalAlignment="Left" Margin="107,149,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120" Height="18" />
         <Label Content="Basim Tarihi" Margin="19,253,829,341"/>
         <ComboBox x:Name="TxtKonu"  Margin="107,195,704,0" RenderTransformOrigin="0.526,-0.748" Height="25" VerticalAlignment="Top" SelectionChanged="TxtKonu_SelectionChanged">
-            <!--<ComboBoxItem Content=" " IsSelected="True"/>-->
-            <!--<ComboBoxItem Content="Edebiyat"/>
+            <ComboBoxItem Content=" " IsSelected="True"/>
+            <ComboBoxItem Content="Edebiyat"/>
             <ComboBoxItem Content="Tarih"/>
             <ComboBoxItem Content="Felsefe"/>
             <ComboBoxItem Content="Bilim"/>
-            <ComboBoxItem Content="Araştırma"/>-->
+            <ComboBoxItem Content="Araştırma"/>
 
         </ComboBox>
         <Button x:Name="BtnAra" FontSize="15" Content="Ara" Margin="299,439,502,125" Click="BtnAra_Click" Background="Orange"/>
