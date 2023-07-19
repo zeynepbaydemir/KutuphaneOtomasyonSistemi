@@ -22,12 +22,10 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Identity.Client;
 using System.Collections;
 using KutuphaneOtomasyon.DataSet1TableAdapters;
+using System.Windows.Controls.Primitives;
 
 namespace KutuphaneOtomasyon
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
     public partial class MainWindow : System.Windows.Window
     {
 
@@ -35,187 +33,293 @@ namespace KutuphaneOtomasyon
         public MainWindow()
         {
             InitializeComponent();
-        }
-
-        private void BtnAra_Click(object sender, RoutedEventArgs e)
-        {
-            OleDbConnection conn = new OleDbConnection("Provider = Microsoft.ACE.OLEDB.12.0;" +
-               @"Data Source = C:\Users\Administrator\Documents\Kutuphane.accdb;" + "User Id=Admin;Password=;");
-            conn.Open();
-
-            //dataGrid.Items.Clear();
-
-
-            //!!! Hata !!! -> Bir çalıştırışta sadece bir kez işlem gerçekleştirebiliyorsun.
-
-            string query = "SELECT * FROM Kitaplar WHERE 1=1";
-            if (!string.IsNullOrEmpty(TxtID.Text)) //calisiyo
+        }            
+            private void BtnAra_Click(object sender, RoutedEventArgs e)
             {
-                query += " AND kitapid = " + TxtID.Text;
+                try
+                {
+                    using (OleDbConnection conn = new OleDbConnection("Provider = Microsoft.ACE.OLEDB.12.0;" +
+                        @"Data Source = C:\Users\Administrator\Documents\Kutuphane.accdb;" + "User Id=Admin;Password=;"))
+                    {
+                        conn.Open();
+
+                    string query = "SELECT Kitaplar.kitapid, Kitaplar.kitapad, Kitaplar.yazar, Kitaplar.basimtarih, Konular.kitapkonu " +
+                                   "FROM Kitaplar INNER JOIN Konular ON Kitaplar.konu = Konular.konuid " +
+                                   "WHERE 1=1";
+
+
+
+                    if (!string.IsNullOrEmpty(TxtID.Text))
+                        {
+                            query += " AND Kitaplar.kitapid = @kitapid";
+                        }
+
+                    if (!string.IsNullOrEmpty(TxtAd.Text))
+                        {
+                            query += " AND Kitaplar.kitapad LIKE @kitapad";
+                        }
+
+                        if (!string.IsNullOrEmpty(TxtYazar.Text))
+                        {
+                            query += " AND Kitaplar.yazar LIKE @yazar";
+                        }
+
+                        //if (DateSelect.SelectedDate != null)
+                        //{
+                        //    query += " AND Kitaplar.basimtarih = @basimtarih";
+                        //}
+
+                    if (DateSelect.SelectedDate != null)
+                    {
+                        if (TxtAralik.Text == "Öncesi" )
+                        {
+                            string aralikSecim = ((ComboBoxItem)TxtAralik.SelectedItem)?.Content.ToString();
+                            //query += " Select Kitaplar.basimtarih from Kitaplar where Kitaplar.basimtarih < @basimtarih ";
+                            query = "Select * from Kitaplar where Kitaplar.basimtarih < @basimtarih ";
+
+                        }
+                        if (TxtAralik.Text == "Sonrası")
+                        {
+                            string aralikSecim = ((ComboBoxItem)TxtAralik.SelectedItem)?.Content.ToString();
+                            query = " Select * from Kitaplar where Kitaplar.basimtarih > @basimtarih ";
+                        }
+                        if(TxtAralik.Text != "Öncesi" && TxtAralik.Text != "Sonrası")
+                        {
+                            query += " AND Kitaplar.basimtarih = @basimtarih";
+                        }
+                        
+                    }
+
+                    if (TxtKonu.Text == "Edebiyat" || TxtKonu.Text == "Tarih" || TxtKonu.Text == "Araştırma" || 
+                        TxtKonu.Text == "Bilim" || TxtKonu.Text == "Felsefe")
+                        {
+                            string konuSecim = ((ComboBoxItem)TxtKonu.SelectedItem)?.Content.ToString();
+                            query += " AND Konular.kitapkonu = @kitapkonu";
+                        }
+
+                        OleDbCommand cmd = new OleDbCommand(query, conn);
+
+                    if (!string.IsNullOrEmpty(TxtID.Text))
+                        {
+                            cmd.Parameters.AddWithValue("@kitapid", int.Parse(TxtID.Text));
+                        }
+
+                        if (!string.IsNullOrEmpty(TxtAd.Text))
+                        {
+                            cmd.Parameters.AddWithValue("@kitapad", TxtAd.Text);
+                        }
+
+                        if (!string.IsNullOrEmpty(TxtYazar.Text))
+                        {
+                            cmd.Parameters.AddWithValue("@yazar", "%" + TxtYazar.Text + "%");
+                        }
+
+                        if (DateSelect.SelectedDate != null)
+                        {
+                            cmd.Parameters.AddWithValue("@basimtarih", DateSelect.SelectedDate.Value);
+                        }
+
+                        if (TxtKonu.SelectedItem != null)
+                        {
+                            string konuSecim = ((ComboBoxItem)TxtKonu.SelectedItem)?.Content.ToString();
+                            cmd.Parameters.AddWithValue("@kitapkonu", konuSecim);
+                        }
+
+                        OleDbDataAdapter da = new OleDbDataAdapter(cmd);
+                        System.Data.DataTable dt = new System.Data.DataTable();
+                        da.Fill(dt);
+                        dataGrid.ItemsSource = CollectionViewSource.GetDefaultView(dt);
+
+                        conn.Close();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Bir hata oluştu: " + ex.Message);
+                }
             }
-            if (!string.IsNullOrEmpty(TxtAd.Text)) //calisiyo
-            {
-                query += " AND kitapad LIKE '%" + TxtAd.Text + "%'";
-            }
-            if (!string.IsNullOrEmpty(TxtYazar.Text))//calisiyo
-            {
-                query += " AND yazar LIKE '%" + TxtYazar.Text + "%'";
-            }
 
-            //Where[Date] between "
-            //+ dateTimePicker2.Value.ToString("#yyyy/MM/dd#")
-            //if (DateSelect.SelectedDate != null) //calismiyor date kisminda hep bi hata veriyo
-            //{
-            //    query += " AND basimtarih= " + DateSelect.SelectedDate.Value.ToString("dd/MM/yyyy");
+        
 
-            //}
+        ////!!! Hata !!! -> Bir çalıştırışta sadece bir kez işlem gerçekleştirebiliyorsun.
 
-            if (TxtKonu.SelectedItem != null) //calisiyo
-            {
-                query += " AND konu = '" + ((ComboBoxItem)TxtKonu.SelectedItem).Content.ToString() + "'";
-            }
-
-            //ClearInputs();
-
-            //hoca ile yaptikkk
-            //string a = "Select * from kitaplar where basimtarih between #05/07/2023# AND #20/07/2023# ";
-
-            OleDbCommand cmd = new OleDbCommand(query, conn);//query yerine a yazarak aralıklı tarih araması yapabilirsin
-            OleDbDataAdapter da = new OleDbDataAdapter(cmd);
-            System.Data.DataTable dt = new System.Data.DataTable();
-            //da.Fill(dt);
-            dataGrid.ItemsSource = CollectionViewSource.GetDefaultView(dt);
-
-            conn.Close();
-
-
-
-
-
-            //yeni bi deneme
-            //DataTable tablo = new DataTable();
-            //conn.Open();
-            //SqlDataAdapter adtr = new SqlDataAdapter("select *from kitaplar where tc like %"+txt);
-
-
-            //OleDbCommand show = new OleDbCommand("select * from kitaplar where 1=1");
-            //if (!string.IsNullOrEmpty(TxtAd.Text))
-            //{
-            //    show += "AND kitapad = @p1" 
-            //}
-
-
-            //OleDbCommand show = new OleDbCommand("select * from kitaplar where kitapad = @kitapad", conn);
-            //show.Parameters.AddWithValue("kitapad", TxtAd.Text);
-            ////OleDbDataReader oku = show.ExecuteReader();
-            //dataGrid.ItemsSource = show.ExecuteReader();
-
-
-
-
-            ////Bu calisiyo
-            //OleDbCommand show = new OleDbCommand("select * from kitaplar where kitapad = @p1 or yazar = @p2 or konu = @p4 or kitapid = @p5", conn);
-            ////show.Parameters.AddWithValue("kitapad", TxtAd.Text);//Bu yorum satırı
-
-
-            //show.Parameters.AddWithValue("@p1", TxtAd.Text);
-            //show.Parameters.AddWithValue("@p2", (TxtYazar.Text));
-            ////show.Parameters.AddWithValue("@p3", (DateSelect.SelectedDate));//yorum satırı
-            //show.Parameters.AddWithValue("@p4", (TxtKonu.Text));
-            //show.Parameters.AddWithValue("@p5", int.Parse(TxtID.Text));
-            //dataGrid.ItemsSource = show.ExecuteReader();//bu yorum sat degil.
-
-            ////OleDbDataReader oku = show.ExecuteReader();//yorum satırı
-
-
-
-            //while (oku.Read())
-            //{
-            //    //TxtID.Text = oku["Id"].ToString();
-            //    //TxtAd.Text = oku["Kitap Adı"].ToString();
-            //    //TxtYazar.Text = oku["Yazar"].ToString();
-            //    ////DateSelect.SelectedDate = oku["Basım Tarih"].ToString();
-            //    ////txtParola.Text = oku["Parola"].ToString();
-            //    //TxtKonu.Text = oku["Konu"].ToString() ;
-
-            //    ListViewItem ekle = new ListViewItem();
-            //    ekle.Content = oku["kitapad"].ToString();
-            //    //ekle.SubItems.Add(oku["yazar"].ToString());
-            //    ////ekle.SubItems.Add(oku["Ad"].ToString());
-            //    //ekle.SubItems.Add(oku["basimtarih"].ToString());
-            //    //ekle.SubItems.Add(oku["konu"].ToString());
-
-            //    dataGrid.Items.Add(ekle);
-            //}
-            //conn.Close();
-        }
-
-        //private void ClearInputs()
+        //string query = "SELECT * FROM Kitaplar WHERE 1=1";
+        //if (!string.IsNullOrEmpty(TxtID.Text)) //calisiyo
         //{
-        //    TxtID.Text = string.Empty;
-        //    TxtAd.Text = string.Empty;
-        //    TxtYazar.Text = string.Empty;
-        //    TxtKonu.SelectedItem = null;
-        //    DateSelect.SelectedDate = null;
+        //    query += " AND kitapid = " + TxtID.Text;
+        //}
+        //if (!string.IsNullOrEmpty(TxtAd.Text)) //calisiyo
+        //{
+        //    query += " AND kitapad LIKE '%" + TxtAd.Text + "%'";
+        //}
+        //if (!string.IsNullOrEmpty(TxtYazar.Text))//calisiyo
+        //{
+        //    query += " AND yazar LIKE '%" + TxtYazar.Text + "%'";
         //}
 
-        private void BtnGuncelle_Click(object sender, RoutedEventArgs e)
-        {
-            OleDbConnection conn = new OleDbConnection("Provider = Microsoft.ACE.OLEDB.12.0;" +
-            @"Data Source = C:\Users\Administrator\Documents\Kutuphane.accdb;" + "User Id=Admin;Password=;");
-            conn.Open();
+        ////Where[Date] between "
+        ////+ dateTimePicker2.Value.ToString("#yyyy/MM/dd#")
+        ////if (DateSelect.SelectedDate != null) //calismiyor date kisminda hep bi hata veriyo
+        ////{
+        ////    query += " AND basimtarih= " + DateSelect.SelectedDate.Value.ToString("dd/MM/yyyy");
 
-            //ad ve yazar bossa mesaj dondurur
-            if (TxtAd.Text == "" && TxtYazar.Text == "")
+        ////}
+
+        //if (TxtKonu.SelectedItem != null) //calisiyo
+        //{
+        //    query += " AND konu = '" + ((ComboBoxItem)TxtKonu.SelectedItem).Content.ToString() + "'";
+        //}
+
+
+        ////hoca ile yaptikkk
+        ////string a = "Select * from kitaplar where basimtarih between #05/07/2023# AND #20/07/2023# ";
+
+        //OleDbCommand cmd = new OleDbCommand(query, conn);//query yerine a yazarak aralıklı tarih araması yapabilirsin
+        //OleDbDataAdapter da = new OleDbDataAdapter(cmd);
+        //System.Data.DataTable dt = new System.Data.DataTable();
+        //da.Fill(dt);
+        //dataGrid.ItemsSource = CollectionViewSource.GetDefaultView(dt);
+
+        //conn.Close();
+
+        //*******************************************************************************************************
+
+
+
+        //yeni bi deneme
+        //DataTable tablo = new DataTable();
+        //conn.Open();
+        //SqlDataAdapter adtr = new SqlDataAdapter("select *from kitaplar where tc like %"+txt);
+
+
+        //OleDbCommand show = new OleDbCommand("select * from kitaplar where 1=1");
+        //if (!string.IsNullOrEmpty(TxtAd.Text))
+        //{
+        //    show += "AND kitapad = @p1" 
+        //}
+
+
+        //OleDbCommand show = new OleDbCommand("select * from kitaplar where kitapad = @kitapad", conn);
+        //show.Parameters.AddWithValue("kitapad", TxtAd.Text);
+        ////OleDbDataReader oku = show.ExecuteReader();
+        //dataGrid.ItemsSource = show.ExecuteReader();
+
+
+
+
+        //////Bu calisiyo
+        //OleDbCommand show = new OleDbCommand("Select Kitaplar.kitapid or Kitaplar.kitapad or Kitaplar.yazar or Kitaplar.basimtarih or konular.kitapkonu from kitaplar, konular where kitaplar.konu=konular.konuid ", conn);
+        ////show.Parameters.AddWithValue("kitapad", TxtAd.Text);//Bu yorum satırı
+
+
+        //show.Parameters.AddWithValue("kitapad", TxtAd.Text);
+        //show.Parameters.AddWithValue("yazar", (TxtYazar.Text));
+        //show.Parameters.AddWithValue("basimtarih", (DateSelect.SelectedDate));//yorum satırı
+        //show.Parameters.AddWithValue("kitapkonu", (TxtKonu.Text));
+        //show.Parameters.AddWithValue("kitapid", int.Parse(TxtID.Text));
+        //dataGrid.ItemsSource = show.ExecuteReader();//bu yorum sat degil.
+
+        ////OleDbDataReader oku = show.ExecuteReader();//yorum satı
+
+
+
+
+
+        private void BtnGuncelle_Click(object sender, RoutedEventArgs e)
             {
-                MessageBox.Show("Doldurulması gereken alanları doldurmadınız!!!");
-                return;
+            //chatgpt den destek alindi.
+                try
+                {
+                    using (OleDbConnection conn = new OleDbConnection("Provider = Microsoft.ACE.OLEDB.12.0;" +
+                        @"Data Source = C:\Users\Administrator\Documents\Kutuphane.accdb;" + "User Id=Admin;Password=;"))
+                    {
+                        conn.Open();
+
+                        // Kitaplar tablosunda güncelleme yapma
+                        OleDbCommand guncelleCommand = new OleDbCommand("UPDATE Kitaplar " +
+                            "SET kitapad = @p1, yazar = @p2, basimtarih = @p3, konu = @p4 " +
+                            "WHERE kitapid = @p5", conn);
+                        guncelleCommand.Parameters.AddWithValue("@p1", TxtAd.Text);
+                        guncelleCommand.Parameters.AddWithValue("@p2", TxtYazar.Text);
+                        guncelleCommand.Parameters.AddWithValue("@p3", DateSelect.SelectedDate);
+                        guncelleCommand.Parameters.AddWithValue("@p4", GetKonuID(((ComboBoxItem)TxtKonu.SelectedItem)?.Content.ToString()));
+                        guncelleCommand.Parameters.AddWithValue("@p5", int.Parse(TxtID.Text));
+
+                        // Güncelleme işlemini gerçekleştirme
+                        int affectedRows = guncelleCommand.ExecuteNonQuery();
+
+                        if (affectedRows > 0)
+                            MessageBox.Show("Güncelleme işlemi başarıyla gerçekleşti.");
+                        else
+                            MessageBox.Show("Güncelleme işlemi başarısız oldu. Belirtilen ID'ye ait bir kayıt bulunamadı.");
+
+                        conn.Close();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Bir hata oluştu: " + ex.Message);
+                }
             }
 
-            //Id kısmı bos ve diger seyler doluysa mesaj bastırır ekrana
-            //if (TxtAd.Text != "" && TxtYazar.Text != "" && (DateSelect.SelectedDate) != null)
-            //{
-            //    MessageBox.Show("Lütfen ID kısmını doldurunuz");
-            //    return;
-            //}
-           
 
-            //bu kisimin sorgusunda degisiklik yapildi.
-            OleDbCommand show = new OleDbCommand("update kitaplar set kitapad =@p1,yazar=@p2,basimtarih=@p3, konular.kitapkonu= @p4 where konular.id= kitaplar.konu where kitapid = @p5 ", conn);
-
-            show.Parameters.AddWithValue("@p1", (TxtAd.Text));
-            show.Parameters.AddWithValue("@p2", (TxtYazar.Text));
-            show.Parameters.AddWithValue("@p3", (DateSelect.SelectedDate));
-            show.Parameters.AddWithValue("@p4", (TxtKonu.Text));
-            show.Parameters.AddWithValue("@p5", int.Parse(TxtID.Text));
-
-            show.ExecuteNonQuery();
-            MessageBox.Show("Guncelleme islemi basarili bir sekilde gerceklesti.");
-
-
-            conn.Close();
-        }
 
         private void BtnEkle_Click(object sender, RoutedEventArgs e)
         {
+            try //chatgpt den yardım alindi.
+            {
+                using (OleDbConnection conn = new OleDbConnection("Provider = Microsoft.ACE.OLEDB.12.0;" +
+                    @"Data Source = C:\Users\Administrator\Documents\Kutuphane.accdb;" + "User Id=Admin;Password=;"))
+                {
+                    conn.Open();
 
+                    // Önce konuID'yi almak için Konular tablosundan konuSecim değerine göre sorgu yapalım
+                    string konuSecim = ((ComboBoxItem)TxtKonu.SelectedItem)?.Content.ToString();
+                    int konuID = GetKonuID(konuSecim);
 
-            OleDbConnection conn = new OleDbConnection("Provider = Microsoft.ACE.OLEDB.12.0;" +
-            @"Data Source = C:\Users\Administrator\Documents\Kutuphane.accdb;" + "User Id=Admin;Password=;");
-            conn.Open();
+                    // Kitaplar tablosuna veri ekleme
+                    OleDbCommand ekleCommand = new OleDbCommand("INSERT INTO Kitaplar (kitapid, kitapad, yazar, basimtarih, konu) " +
+                        "VALUES (@p1, @p2, @p3, @p4, @p5)", conn);
+                    ekleCommand.Parameters.AddWithValue("@p1", int.Parse(TxtID.Text));
+                    ekleCommand.Parameters.AddWithValue("@p2", TxtAd.Text);
+                    ekleCommand.Parameters.AddWithValue("@p3", TxtYazar.Text);
+                    ekleCommand.Parameters.AddWithValue("@p4", DateSelect.SelectedDate);
+                    ekleCommand.Parameters.AddWithValue("@p5", konuID);
 
-            OleDbCommand show = new OleDbCommand("insert into Kitaplar(kitapid, kitapad,yazar,basimtarih,konu) values (@p1,@p2,@p3,@p4,@p5)", conn);
-            show.Parameters.AddWithValue("@p1", int.Parse(TxtID.Text));
-            show.Parameters.AddWithValue("@p2", (TxtAd.Text));
-            show.Parameters.AddWithValue("@p3", (TxtYazar.Text));
-            show.Parameters.AddWithValue("@p4", (DateSelect.SelectedDate));
-            show.Parameters.AddWithValue("@p5", ((ComboBoxItem)TxtKonu.SelectedItem));
+                    // Veri ekleme işlemini gerçekleştirme
+                    ekleCommand.ExecuteNonQuery();
 
-            show.ExecuteNonQuery();
-            conn.Close();
-            MessageBox.Show("Ekleme islemi basarili bir sekilde gerceklesti.");
+                    MessageBox.Show("Ekleme işlemi başarıyla gerçekleşti.");
 
+                    conn.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Bir hata oluştu: " + ex.Message);
+            }
         }
+
+        //konuyu buradan atıyorum
+        private int GetKonuID(string konuSecim)
+        {
+            switch (konuSecim)
+            {
+                case "Araştırma":
+                    return 1;
+                case "Bilim":
+                    return 2;
+                case "Edebiyat":
+                    return 3;
+                case "Felsefe":
+                    return 4;
+                case "Tarih":
+                    return 5;
+                default:
+                    return 0; // Varsayılan değer
+            }
+        }
+
 
         private void BtnSil_Click(object sender, RoutedEventArgs e)
         {
@@ -239,7 +343,7 @@ namespace KutuphaneOtomasyon
 
         private void BtnListe_Click_1(object sender, RoutedEventArgs e)
         {
-            //butona
+            //butona basınca listeler
             OleDbConnection conn = new OleDbConnection("Provider = Microsoft.ACE.OLEDB.12.0;" +
             @"Data Source = C:\Users\Administrator\Documents\Kutuphane.accdb;" + "User Id=Admin;Password=;");
             conn.Open();
@@ -249,105 +353,16 @@ namespace KutuphaneOtomasyon
 
             dataGrid.ItemsSource = show.ExecuteReader();
 
-           // dataGrid.GetCell(1,1) = 
-           // dataGrid
 
-            //DataGridViewColumn c = new DataGridViewColumn();
-            //DataGridViewCell cell = new DataGridViewTextBoxCell();
+        }
 
-            //c.CellTemplate = cell;
-            //c.HeaderText = "eklenen";
-            //c.Name = "eklenen";
-            //c.Visible = true;
-
-            //dgv.Columns.Insert(0, c);
-
-            //dataGrid.Columns[4].Visibility = Visibility.Hidden;
-
-          /*  DataGridTextColumn column = new DataGridTextColumn();
-            column.Header = "KonuX";
-           // column.Binding = new Binding("Konu");
-            dataGrid.Columns.Insert(4, column);
-            dataGrid[1, 0].Value =  = int.Parse(TxtID.Text);*/
-           /* foreach (DataGridRow row in dataGrid.Row)
-            {
-                if (row.Cells[7].Value.ToString() == "1")
-                    row.Cells[0].Value = "number one";
-            }*/
-            // dataGrid.Columns.RemoveAt(1);
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
 
         }
 
         private void TxtKonu_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            
-        }
-
-
-        //public enum Konular
-        //{
-        //    Seciniz,
-        //    Araştırma,
-        //    Bilim,
-        //    Edebiyat,
-        //    Felsefe,
-        //    Tarih
-        //}
-        private void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-
-            //Console.WriteLine(Konular.Felsefe);
-            //int konu = (int)Konular.Felsefe;
-            //Console.WriteLine(konu);
-
-            //var wd = (Konular)1;
-            //Console.WriteLine(wd);
-
-
-            //Hoca ile yazdık
-            /*Konular k = (Konular)2;
-            MessageBox.Show(k.ToString());
-            Konular.Bilim.ToString();*/
-
-            //************************************************
-
-
-            //base.Window_Loaded(e);
-
-            //List<string> konuListesi = Enum.GetNames(typeof(Konular)).ToList();
-            //TxtKonu.ItemsSource = konuListesi;
-            //TxtKonu.SelectedIndex = 0;
-
-            //List<string> konuListesi = Enum.GetNames(typeof(Konular)).ToList();
-
-            //TxtKonu.ItemsSource = Enum.GetValues(typeof(Konular));
-            //TxtKonu.SelectedIndex = 0;
-
-            //List<string> konuListesi = Enum.GetNames(typeof(Konular)).ToList();
-
-            // ComboBox'a enum değerlerini string olarak ata
-            //TxtKonu.ItemsSource = konuListesi;
-
-            // Default olarak ilk öğeyi seçin
-            //TxtKonu.SelectedIndex = 0;
-
-            //OleDbConnection conn = new OleDbConnection("Provider = Microsoft.ACE.OLEDB.12.0;" +
-            //@"Data Source = C:\Users\Administrator\Documents\Kutuphane.accdb;" + "User Id=Admin;Password=;");
-            //conn.Open();
-
-            ////using (OleDbConnection connection = new OleDbConnection(conn))
-            ////{
-            //OleDbCommand command = new OleDbCommand("SELECT DISTINCT konu FROM kitaplar", conn);
-            //OleDbDataReader reader = command.ExecuteReader();
-            //List<string> konular = new List<string>();
-            //while (reader.Read())
-            //{
-            //    konular.Add(reader.GetString(0));
-            //}
-            ////TxtKonu.ItemsSource = konular;
-            ////}
-            ///
-
 
         }
     }

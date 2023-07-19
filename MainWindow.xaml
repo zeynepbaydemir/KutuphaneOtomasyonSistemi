@@ -44,6 +44,13 @@
             <ComboBoxItem Content="Araştırma"/>
 
         </ComboBox>
+
+        <ComboBox x:Name="TxtAralik"  Margin="107,280,704,0" RenderTransformOrigin="0.526,-0.748" Height="25" VerticalAlignment="Top" SelectionChanged="TxtKonu_SelectionChanged">
+            <ComboBoxItem Content="Zaman araligi seciniz" IsSelected="True"/>
+            <ComboBoxItem Content="Öncesi"/>
+            <ComboBoxItem Content="Sonrası"/>
+            
+        </ComboBox>
         <Button x:Name="BtnAra" FontSize="15" Content="Ara" Margin="299,439,502,125" Click="BtnAra_Click" Background="Orange"/>
         <Label Content="Kitap ID" Margin="26,55,822,485"/>
         <TextBox x:Name="TxtID" HorizontalAlignment="Left" Margin="107,62,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120" Height="18" />
